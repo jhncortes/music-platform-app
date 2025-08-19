@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <RouterView />
+  <GuestLayout>Sign Up</GuestLayout>
 </template>
 
 <style scoped></style>

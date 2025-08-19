@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <RouterView />
+  <h1>Tracks</h1>
 </template>
 
 <style scoped></style>
