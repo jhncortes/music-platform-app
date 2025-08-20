@@ -69,6 +69,7 @@ import GuestLayout from "../components/GuestLayout.vue";
           </button>
         </div>
       </form>
+      
       <p class="mt-10 text-center text-sm/6 text-gray-400">
         Already a member?
         <RouterLink
