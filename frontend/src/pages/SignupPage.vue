@@ -1,27 +1,66 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import GuestLayout from "../components/GuestLayout.vue";
+import axiosClient from "../axios";
+import router from "../router";
+
+const data = ref({
+  name: "",
+  email: "",
+  password: "",
+  password_confirmation: "",
+});
+
+const errors = ref({
+  name: [],
+  email: [],
+  password: [],
+});
+
+const errorMessage = ref<string | null>(null);
+
+function submit() {
+  axiosClient.get("/sanctum/csrf-cookie").then((response) => {
+    // Send signup request after CSRF cookie is set
+    axiosClient
+      .post("/register", data.value)
+      .then((response) => {
+        // Handle successful login response
+        errorMessage.value = null;
+        router.push({ name: "Home" });
+        console.log("Signup successful:", response.data);
+      })
+      .catch((error) => {
+        // Handle error response
+        console.log("Login failed:", error.response.data);
+        errors.value = error.response.data.errors || {};
+      });
+  });
+}
 </script>
 
 <template>
   <GuestLayout>
+    <pre>{{ data }}</pre>
     <h2
       class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white"
     >
       Create an account
     </h2>
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-      <form action="#" method="POST" class="space-y-4">
+      <form @submit.prevent="submit" class="space-y-4">
         <div>
           <label for="name" class="block text-sm/6 font-medium text-gray-100"
             >Name</label
           >
           <div class="mt-2">
             <input
+              v-model="data.name"
               id="name"
               name="name"
-              required
               class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
             />
+            <p class="text-red-500">{{ errors.name ? errors.name[0] : "" }}</p>
           </div>
         </div>
         <div>
@@ -30,13 +69,16 @@ import GuestLayout from "../components/GuestLayout.vue";
           >
           <div class="mt-2">
             <input
+              v-model="data.email"
               id="email"
               type="email"
               name="email"
-              required
               autocomplete="email"
               class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
             />
+            <p class="text-red-500">
+              {{ errors.email ? errors.email[0] : "" }}
+            </p>
           </div>
         </div>
 
@@ -50,11 +92,34 @@ import GuestLayout from "../components/GuestLayout.vue";
           </div>
           <div class="mt-2">
             <input
+              v-model="data.password"
               id="password"
               type="password"
               name="password"
               required
-              autocomplete="current-password"
+              class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+            />
+            <p class="text-red-500">
+              {{ errors.password ? errors.password[0] : "" }}
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label
+              for="password"
+              class="block text-sm/6 font-medium text-gray-100"
+              >Password Confirmation</label
+            >
+          </div>
+          <div class="mt-2">
+            <input
+              v-model="data.password_confirmation"
+              id="password_confirmation"
+              type="password"
+              name="password_confirmation"
+              required
               class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
             />
           </div>
@@ -69,7 +134,7 @@ import GuestLayout from "../components/GuestLayout.vue";
           </button>
         </div>
       </form>
-      
+
       <p class="mt-10 text-center text-sm/6 text-gray-400">
         Already a member?
         <RouterLink

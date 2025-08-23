@@ -1,6 +1,35 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 import GuestLayout from "../components/GuestLayout.vue";
+import axiosClient from "../axios";
+import { ref } from "vue";
+import router from "../router";
+
+const data = ref({
+  email: "",
+  password: "",
+});
+
+const errorMessage = ref<string | null>(null);
+
+function submit() {
+  axiosClient.get("/sanctum/csrf-cookie").then((response) => {
+    // Send login request after CSRF cookie is set
+    axiosClient
+      .post("/login", data.value)
+      .then((response) => {
+        // Handle successful login response
+        errorMessage.value = null;
+        router.push({ name: "Home" });
+        console.log("Login successful:", response.data);
+      })
+      .catch((error) => {
+        // Handle error response
+        console.log("Login failed:", error.response);
+        errorMessage.value = error.response.data.message;
+      });
+  });
+}
 </script>
 
 <template>
@@ -10,14 +39,18 @@ import GuestLayout from "../components/GuestLayout.vue";
     >
       Sign in to your account
     </h2>
+    <div>
+      <p class="text-red-500" v-if="errorMessage">{{ errorMessage }}</p>
+    </div>
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-      <form action="#" method="POST" class="space-y-6">
+      <form @submit.prevent="submit" class="space-y-6">
         <div>
           <label for="email" class="block text-sm/6 font-medium text-gray-100"
             >Email address</label
           >
           <div class="mt-2">
             <input
+              v-model="data.email"
               id="email"
               type="email"
               name="email"
@@ -45,6 +78,7 @@ import GuestLayout from "../components/GuestLayout.vue";
           </div>
           <div class="mt-2">
             <input
+              v-model="data.password"
               id="password"
               type="password"
               name="password"

@@ -50,9 +50,10 @@
                   <span class="sr-only">Open user menu</span>
                   <img
                     class="size-8 rounded-full outline -outline-offset-1 outline-white/10"
-                    :src="user.imageUrl"
+                    src="https://randomuser.me/api/portraits/women/15.jpg"
                     alt=""
                   />
+                  <span>{{ user?.name ? user.name : "test" }}</span>
                 </MenuButton>
 
                 <transition
@@ -138,13 +139,6 @@
       </DisclosurePanel>
     </Disclosure>
 
-    <header
-      class="relative bg-gray-800 after:pointer-events-none after:absolute after:inset-x-0 after:inset-y-0 after:border-y after:border-white/10"
-    >
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
-      </div>
-    </header>
     <main>
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <!-- Your content -->
@@ -154,7 +148,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   Disclosure,
   DisclosureButton,
@@ -166,20 +160,43 @@ import {
 } from "@headlessui/vue";
 import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
 import { RouterLink, RouterView } from "vue-router";
+import axiosClient from "../axios";
+import router from "../router";
+import useUserStore from "../store/user";
+import { computed } from "vue";
 
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
+const userStore = useUserStore();
+
+interface User {
+  name?: string;
+  email?: string;
+  imageUrl?: string;
+}
+
+const user = computed<User | null>(() => userStore.user);
+// const user = {
+//   name: "Tom Cook",
+//   email: "tom@example.com",
+//   imageUrl:
+//     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+// };
 const navigation = [
-  { name: "Upload", to: { name: "Home" } },
+  { name: "Home", to: { name: "Home" } },
   { name: "My Tracks", to: { name: "Tracks" } },
+  { name: "Upload", to: { name: "Upload" } },
 ];
 
 function logout() {
-  console.log("Logging out...");
+  axiosClient
+    .post("/logout")
+    .then((response) => {
+      console.log("Logged out successfully");
+      // Redirect to login page or home page after logout
+      router.push({ name: "Login" });
+    })
+    .catch((error) => {
+      console.error("Logout failed:", error);
+    });
 }
 </script>
 
