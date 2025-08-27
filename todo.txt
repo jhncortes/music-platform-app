@@ -1,0 +1,9 @@
+Things to do:
+
+- Fix frontend upload feature ( make )
+- Fix backend upload ( make filetype dynamic )
+
+
+Later:
+
+- Weird bug where user can access /home if backend api is down ( fix routing )

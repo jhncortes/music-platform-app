@@ -19,7 +19,8 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Handle unauthorized access, e.g., redirect to login
-      router.push({ name: "Login" });
+      //router.push({ name: "Login" });
+      return Promise.reject(error);
     } else {
       // Handle other errors
       throw error;

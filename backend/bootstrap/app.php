@@ -16,7 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
 
-        $middleware->statefulApi();
+        //$middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: [
+            '/login',
+            '/api/*',
+        ]);
 
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,

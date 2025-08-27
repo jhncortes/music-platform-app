@@ -1,3 +1,56 @@
+<script setup lang="ts">
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from "@headlessui/vue";
+import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { RouterLink, RouterView } from "vue-router";
+import axiosClient from "../axios";
+import router from "../router";
+import useUserStore from "../store/user";
+import { computed } from "vue";
+import GuestPage from "../pages/GuestPage.vue";
+
+const userStore = useUserStore();
+
+interface User {
+  name: string;
+  email: string;
+  imageUrl: string;
+}
+
+const user = computed<User | null>(() => userStore.user);
+
+const navigation = [
+  { name: "Home", to: { name: "Home" } },
+  { name: "My Tracks", to: { name: "Tracks" } },
+  { name: "Upload", to: { name: "Upload" } },
+];
+
+const guestNavigation = [
+  { name: "Login", to: { name: "Login" } },
+  { name: "Sign Up", to: { name: "Signup" } },
+];
+
+function logout() {
+  axiosClient
+    .post("/logout")
+    .then((response) => {
+      userStore.user = null;
+      router.push({ name: "Home" });
+      console.log("Logged out successfully");
+    })
+    .catch((error) => {
+      console.error("Logout failed:", error);
+    });
+}
+</script>
+
 <template>
   <!--
     This example requires updating your template:
@@ -8,21 +61,22 @@
     ```
   -->
   <div class="min-h-full">
-    <Disclosure as="nav" class="bg-gray-800/50" v-slot="{ open }">
+    <Disclosure as="nav" v-slot="{ open }">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
-            <div class="shrink-0">
+            <div class="shrink-0 flex items-center space-x-2">
               <img
                 class="size-8"
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
                 alt="Your Company"
               />
+              <p class="font-bold text-lg">Tracknest</p>
             </div>
             <div class="hidden md:block">
               <div class="ml-10 flex items-baseline space-x-4">
                 <RouterLink
-                  v-for="item in navigation"
+                  v-for="item in user ? navigation : guestNavigation"
                   :key="item.name"
                   :to="item.to"
                   :class="[
@@ -53,7 +107,7 @@
                     src="https://randomuser.me/api/portraits/women/15.jpg"
                     alt=""
                   />
-                  <span>{{ user?.name ? user.name : "test" }}</span>
+                  <span class="ml-3">{{ user?.name }}</span>
                 </MenuButton>
 
                 <transition
@@ -115,16 +169,16 @@
             <div class="shrink-0">
               <img
                 class="size-10 rounded-full outline -outline-offset-1 outline-white/10"
-                :src="user.imageUrl"
+                :src="user?.imageUrl"
                 alt=""
               />
             </div>
             <div class="ml-3">
               <div class="text-base/5 font-medium text-white">
-                {{ user.name }}
+                {{ user?.name }}
               </div>
               <div class="text-sm font-medium text-gray-400">
-                {{ user.email }}
+                {{ user?.email }}
               </div>
             </div>
           </div>
@@ -143,61 +197,10 @@
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <!-- Your content -->
         <RouterView />
+        <!-- Shows guest page if not logged in and on home route -->
       </div>
     </main>
   </div>
 </template>
-
-<script setup lang="ts">
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from "@headlessui/vue";
-import { Bars3Icon, XMarkIcon } from "@heroicons/vue/24/outline";
-import { RouterLink, RouterView } from "vue-router";
-import axiosClient from "../axios";
-import router from "../router";
-import useUserStore from "../store/user";
-import { computed } from "vue";
-
-const userStore = useUserStore();
-
-interface User {
-  name?: string;
-  email?: string;
-  imageUrl?: string;
-}
-
-const user = computed<User | null>(() => userStore.user);
-// const user = {
-//   name: "Tom Cook",
-//   email: "tom@example.com",
-//   imageUrl:
-//     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-// };
-const navigation = [
-  { name: "Home", to: { name: "Home" } },
-  { name: "My Tracks", to: { name: "Tracks" } },
-  { name: "Upload", to: { name: "Upload" } },
-];
-
-function logout() {
-  axiosClient
-    .post("/logout")
-    .then((response) => {
-      console.log("Logged out successfully");
-      // Redirect to login page or home page after logout
-      router.push({ name: "Login" });
-    })
-    .catch((error) => {
-      console.error("Logout failed:", error);
-    });
-}
-</script>
 
 <style scoped></style>
