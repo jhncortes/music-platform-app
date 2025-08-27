@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import axiosClient from "../axios";
-
-//const tracks = ref([]);
-
-interface Track {
-  id: number;
-  name: string;
-  title: string;
-  url: string;
-}
+import type { Track } from "../types/Track";
 
 const tracks = ref<Track[]>([]);
 
@@ -66,7 +58,8 @@ onMounted(async () => {
             <h3 class="text-lg font-semibold text-gray-900">
               {{ track.title }}
             </h3>
-            <p class="text-sm text-gray-500 mb-4">{{ track.url }}</p>
+            <p class="text-sm text-gray-500 mb-4">{{ track.description }}</p>
+            <p class="text-sm text-gray-500 mb-4">{{ track.genre }}</p>
           </div>
           <button
             @click="deleteTrack(track.id)"

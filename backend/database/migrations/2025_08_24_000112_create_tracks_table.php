@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('path', 2000);
             $table->string('title');
+            $table->string('description');
+            $table->string('genre');
+
             $table->timestamps();
         });
     }

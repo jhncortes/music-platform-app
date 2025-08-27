@@ -1,62 +1,56 @@
 <script setup lang="ts">
 import { PhotoIcon, MusicalNoteIcon } from "@heroicons/vue/24/solid";
-
+import type { TrackData } from "../types/Track";
 import { ref } from "vue";
 import axiosClient from "../axios";
 import router from "../router";
+import axios from "axios";
 
-interface TrackData {
-  image: File | null;
-  title: string;
-}
-
-const data = ref<TrackData>({
+const trackData = ref<TrackData>({
   image: null,
   title: "",
+  description: "",
+  genre: "",
 });
 
-function submit() {
-  // Handle form submission logic here
-  console.log("Form submitted with data:", data.value);
-  // You can use axios to send the data to your backend
-  // axios.post('/api/tracks', data.value)
-  //   .then(response => console.log('Track uploaded:', response.data))
-  //   .catch(error => console.error('Error uploading track:', error));
+async function putToS3(presignedUrl: string, file: File) {
+  try {
+    const s3Response = await axios.put(presignedUrl, file, {
+      headers: {
+        "Content-Type": file.type,
+      },
+      withCredentials: false,
+    });
+    console.log("File uploaded to S3 successfully", s3Response);
+  } catch (error) {
+    console.error("Error uploading file to S3:", error);
+  }
+}
+
+async function submit() {
+  console.log("Form submitted with data:", trackData.value);
+  if (!trackData.value.image) throw Error;
 
   const formData = new FormData();
-  formData.append("image", data.value.image as File);
-  formData.append("title", data.value.title);
-  axiosClient
-    .post("/api/tracks", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-    .then((response) => {
-      console.log("Presigned URL received:", response.data);
-      axiosClient
-        .put(response.data, data.value.image, {
-          headers: {
-            "Content-Type": data.value.image
-              ? data.value.image.type
-              : "application/octet-stream",
-          },
-          withCredentials: false,
-        })
-        .then((response) => {
-          console.log("File uploaded to S3 successfully", response);
-        })
-        .catch((error) => {
-          console.error("Error uploading file to S3:", error);
-        });
-      //router.push({ name: "Tracks" });
-      console.log("Track uploaded successfully");
-      // Optionally, reset the form or redirect
-      data.value = { image: null, title: "" };
-    })
-    .catch((error) => {
-      console.error("Error uploading track:", error);
-    });
+  formData.append("image", trackData.value.image);
+  formData.append("title", trackData.value.title);
+  formData.append("description", trackData.value.description);
+  formData.append("genre", trackData.value.genre);
+
+  try {
+    // Send track metadata to backend
+    const response = await axiosClient.post("/api/tracks", formData);
+    console.log("Presigned URL received:", response.data);
+    const presignedUrl = response.data;
+    // Upload to S3
+    await putToS3(presignedUrl, trackData.value.image);
+    // Reset form
+    trackData.value = { image: null, title: "", description: "", genre: "" };
+    // Redirect to tracks page
+    router.push({ name: "Tracks" });
+  } catch (error) {
+    console.error("Error preparing upload:", error);
+  }
 }
 </script>
 
@@ -89,7 +83,7 @@ function submit() {
               <span>Upload a file</span>
               <input
                 @change="
-                  data.image =
+                  trackData.image =
                     ($event.target as HTMLInputElement).files?.[0] ?? null
                 "
                 id="file-upload"
@@ -126,7 +120,7 @@ function submit() {
                 <span>Upload a file</span>
                 <input
                   @change="
-                    data.image =
+                    trackData.image =
                       ($event.target as HTMLInputElement).files?.[0] ?? null
                   "
                   id="file-upload"
@@ -142,39 +136,42 @@ function submit() {
         </div>
       </div>
       <div class="flex flex-col">
+        <!-- Title -->
         <label for="title" class="block text-sm/6 font-medium text-white"
           >Title</label
         >
         <div class="mt-2 mb-4">
           <input
-            v-model="data.title"
+            v-model="trackData.title"
             type="text"
             name="title"
             id="title"
             class="block w-full flex-1 rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
           />
         </div>
-        <label for="title" class="block text-sm/6 font-medium text-white"
+        <!-- Description -->
+        <label for="description" class="block text-sm/6 font-medium text-white"
           >Description</label
         >
         <div class="mt-2 mb-4">
           <input
-            v-model="data.title"
+            v-model="trackData.description"
             type="text"
-            name="title"
-            id="title"
+            name="description"
+            id="description"
             class="block w-full flex-1 rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
           />
         </div>
-        <label for="title" class="block text-sm/6 font-medium text-white"
+        <!-- Genre -->
+        <label for="genre" class="block text-sm/6 font-medium text-white"
           >Genre</label
         >
         <div class="mt-2 mb-4">
           <input
-            v-model="data.title"
+            v-model="trackData.genre"
             type="text"
-            name="title"
-            id="title"
+            name="genre"
+            id="genre"
             class="block w-full flex-1 rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
           />
         </div>

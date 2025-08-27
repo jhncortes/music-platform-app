@@ -31,6 +31,8 @@ class TrackController extends Controller
                 'id' => $track->id,
                 'url' => $track->path,
                 'title' => $track->title,
+                'description' => $track->description,
+                'genre' => $track->genre,
                 'created_at' => $track->created_at,
                 'updated_at' => $track->updated_at,
             ];
@@ -50,23 +52,25 @@ class TrackController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $request->validate([
             'title' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'genre' => 'required|string|max:255',
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg'],
         ]);
 
-        //$path = $request->file('image')->store('images', 'public');
-        $presignedUrl = $this->s3Service->getPresignedUrl(env('AWS_BUCKET'), 'cover-photo/climber.png', 60, 'PUT');
-        $path = explode('?', $presignedUrl)[0]; // Remove query parameters for storage path
+        $file = $request->file('image');
+        $presignedUrl = $this->s3Service->getPresignedUrl(env('AWS_BUCKET'), 'cover-photo/' . $file->getClientOriginalName(), 60, $file->getMimeType());
+         // Remove query parameters for storage path
+        $path = explode('?', $presignedUrl)[0];
 
-
+        // Store to DB
         Track::create([
             'path' => $path,
             'title' => $request->title,
+            'description' => $request->description,
+            'genre' => $request->genre,
         ]);
-
-
 
         return response($presignedUrl, 201);
     }

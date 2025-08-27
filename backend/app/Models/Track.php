@@ -9,5 +9,7 @@ class Track extends Model
     protected $fillable = [
         'path',
         'title',
+        'description',
+        'genre'
     ];
 }
