@@ -127,6 +127,14 @@ function logout() {
                     </MenuItem>
                     <MenuItem>
                       <button
+                        @click="router.push({ name: 'Settings' })"
+                        :class="['block px-4 py-2 text-sm text-gray-300']"
+                      >
+                        Settings
+                      </button>
+                    </MenuItem>
+                    <MenuItem>
+                      <button
                         @click="logout"
                         :class="['block px-4 py-2 text-sm text-gray-300']"
                       >

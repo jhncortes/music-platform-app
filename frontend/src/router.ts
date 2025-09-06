@@ -12,6 +12,7 @@ import GuestPage from "./pages/GuestPage.vue";
 import axiosClient from "./axios";
 import useUserProfileStore from "./store/userProfile";
 import useTrackStore from "./store/track";
+import SettingsPage from "./pages/SettingsPage.vue";
 
 const routes = [
   {
@@ -67,6 +68,12 @@ const routes = [
         path: "/tracks",
         name: "Tracks",
         component: TracksPage,
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "/settings",
+        name: "Settings",
+        component: SettingsPage,
         meta: { requiresAuth: true },
       },
       // { path: "/profile", name: "Profile", component: ProfilePage },
