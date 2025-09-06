@@ -1,13 +1,54 @@
 <script setup lang="ts">
 import { PhotoIcon, MusicalNoteIcon } from "@heroicons/vue/24/solid";
 import type { TrackData } from "../types/Track";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import axiosClient from "../axios";
 import router from "../router";
 import axios from "axios";
+import useUserStore from "../store/user";
+import type { User } from "../types/User";
+
+const userStore = useUserStore();
+const user = computed<User | null>(() => userStore.user);
+
+const isAudioUploaded = ref(false);
+
+const isImageDragging = ref(false);
+const isAudioDragging = ref(false);
+
+function handleImageDragEnter(event: DragEvent) {
+  event.preventDefault();
+  isImageDragging.value = !isImageDragging.value;
+}
+
+function handleAudioDragEnter(event: DragEvent) {
+  event.preventDefault();
+  isAudioDragging.value = !isAudioDragging.value;
+}
+
+function handleImageDrop(event: DragEvent) {
+  event.preventDefault();
+  isImageDragging.value = false;
+
+  const files = event.dataTransfer?.files;
+  if (files && files.length > 0) {
+    if (files) trackData.value.image = files[0];
+  }
+}
+
+function handleAudioDrop(event: DragEvent) {
+  event.preventDefault();
+  isAudioDragging.value = false;
+
+  const files = event.dataTransfer?.files;
+  if (files && files.length > 0) {
+    if (files) trackData.value.audio = files[0];
+  }
+}
 
 const trackData = ref<TrackData>({
   image: null,
+  audio: null,
   title: "",
   description: "",
   genre: "",
@@ -28,26 +69,44 @@ async function putToS3(presignedUrl: string, file: File) {
 }
 
 async function submit() {
-  console.log("Form submitted with data:", trackData.value);
-  if (!trackData.value.image) throw Error;
-
-  const formData = new FormData();
-  formData.append("image", trackData.value.image);
-  formData.append("title", trackData.value.title);
-  formData.append("description", trackData.value.description);
-  formData.append("genre", trackData.value.genre);
-
   try {
+    console.log("Form submitted with data:", trackData.value);
+    if (
+      !trackData.value.image ||
+      !trackData.value.audio ||
+      !user.value ||
+      user.value === null
+    ) {
+      throw new Error("Missing image, audio or user ID");
+    }
+
+    const formData = new FormData();
+    formData.append("userId", user.value.id);
+    formData.append("image", trackData.value.image);
+    formData.append("audio", trackData.value.audio);
+    formData.append("title", trackData.value.title);
+    formData.append("description", trackData.value.description);
+    formData.append("genre", trackData.value.genre);
     // Send track metadata to backend
     const response = await axiosClient.post("/api/tracks", formData);
     console.log("Presigned URL received:", response.data);
-    const presignedUrl = response.data;
-    // Upload to S3
-    await putToS3(presignedUrl, trackData.value.image);
+
+    // Upload image and audio to S3
+    console.log("Uploading files to S3");
+    await putToS3(response.data.imagePresignedUrl, trackData.value.image);
+    await putToS3(response.data.audioPresignedUrl, trackData.value.audio);
+
     // Reset form
-    trackData.value = { image: null, title: "", description: "", genre: "" };
+    trackData.value = {
+      image: null,
+      audio: null,
+      title: "",
+      description: "",
+      genre: "",
+    };
     // Redirect to tracks page
     router.push({ name: "Tracks" });
+    console.log("Successfully uploaded!");
   } catch (error) {
     console.error("Error preparing upload:", error);
   }
@@ -61,51 +120,70 @@ async function submit() {
       <p>Upload a track in WAV, MP3, OGG format</p>
     </div>
   </header>
+
   <form @submit.prevent="submit" class="p-8">
-    <!-- Uploaded Audio -->
     <div class="col-span-full mb-4">
-      <label for="cover-photo" class="block text-sm/6 font-medium text-white"
-        >Audio file</label
-      >
-      <div
-        class="mt-2 flex justify-center rounded-lg border border-dashed border-white/25 px-6 py-10"
-      >
-        <div class="text-center">
-          <MusicalNoteIcon
-            class="mx-auto size-12 text-gray-200"
-            aria-hidden="true"
-          />
-          <div class="mt-4 flex text-sm/6 text-gray-400">
-            <label
-              for="file-upload"
-              class="relative cursor-pointer rounded-md bg-transparent font-semibold text-indigo-400 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-500 hover:text-indigo-300"
-            >
-              <span>Upload a file</span>
-              <input
-                @change="
-                  trackData.image =
-                    ($event.target as HTMLInputElement).files?.[0] ?? null
-                "
-                id="file-upload"
-                name="file-upload"
-                type="file"
-                class="sr-only"
-              />
-            </label>
-            <p class="pl-1">or drag and drop</p>
-          </div>
-          <!-- <p class="text-xs/5 text-gray-400">PNG, JPG, GIF up to 10MB</p> -->
-        </div>
-      </div>
+      <label class="block text-sm/6 font-medium text-white">Audio file</label>
     </div>
-    <!-- Cover Photo -->
+    <!-- Audio File Dropzone -->
+    <div
+      @dragenter.prevent="handleAudioDragEnter"
+      @dragleave.prevent="handleAudioDragEnter"
+      @dragover.prevent
+      @drop.prevent="handleAudioDrop"
+      :class="[
+        'mt-2 mb-4 flex justify-center rounded-lg border border-dashed px-6 py-10',
+        isAudioDragging
+          ? 'border-white bg-neutral-700 transition-colors'
+          : 'border-white/25 transition-colors',
+      ]"
+    >
+      <div class="text-center">
+        <MusicalNoteIcon
+          class="mx-auto size-12 text-gray-200"
+          aria-hidden="true"
+        />
+        <div class="mt-4 flex text-sm/6 text-gray-400">
+          <label
+            class="relative cursor-pointer rounded-md font-semibold text-sky-400 hover:text-sky-300"
+            for="audio-upload"
+          >
+            Upload File
+          </label>
+          <p class="pl-1">or drag and drop</p>
+        </div>
+
+        <p class="text-xs/5 text-gray-400">
+          {{
+            trackData.audio ? trackData.audio.name : "PNG, JPG, GIF up to 10MB"
+          }}
+        </p>
+      </div>
+      <input
+        @change="
+          trackData.audio =
+            ($event.target as HTMLInputElement).files?.[0] ?? null
+        "
+        id="audio-upload"
+        type="file"
+        class="sr-only"
+      />
+    </div>
+
     <div class="grid grid-cols-2 gap-6 items-stretch">
       <div class="flex flex-col">
-        <label for="cover-photo" class="block text-sm/6 font-medium text-white"
-          >Cover photo</label
-        >
+        <!-- Image File Dropzone -->
         <div
-          class="mt-2 flex justify-center rounded-lg border border-dashed border-white/25 px-6 py-10 h-full"
+          @dragenter.prevent="handleImageDragEnter"
+          @dragleave.prevent="handleImageDragEnter"
+          @dragover.prevent
+          @drop.prevent="handleImageDrop"
+          :class="[
+            'mt-2 flex justify-center rounded-lg border border-dashed px-6 py-10 h-full',
+            isImageDragging
+              ? 'border-white bg-neutral-700 transition-colors'
+              : 'border-white/25 transition-colors',
+          ]"
         >
           <div class="text-center">
             <PhotoIcon
@@ -114,25 +192,31 @@ async function submit() {
             />
             <div class="mt-4 flex text-sm/6 text-gray-400">
               <label
-                for="file-upload"
-                class="relative cursor-pointer rounded-md bg-transparent font-semibold text-indigo-400 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-500 hover:text-indigo-300"
+                class="relative cursor-pointer rounded-md font-semibold text-sky-400 hover:text-sky-300"
+                for="image-upload"
               >
-                <span>Upload a file</span>
-                <input
-                  @change="
-                    trackData.image =
-                      ($event.target as HTMLInputElement).files?.[0] ?? null
-                  "
-                  id="file-upload"
-                  name="file-upload"
-                  type="file"
-                  class="sr-only"
-                />
+                Upload File
               </label>
               <p class="pl-1">or drag and drop</p>
             </div>
-            <p class="text-xs/5 text-gray-400">PNG, JPG, GIF up to 10MB</p>
+
+            <p class="text-xs/5 text-gray-400">
+              {{
+                trackData.image
+                  ? trackData.image.name
+                  : "PNG, JPG, GIF up to 10MB"
+              }}
+            </p>
           </div>
+          <input
+            @change="
+              trackData.image =
+                ($event.target as HTMLInputElement).files?.[0] ?? null
+            "
+            id="image-upload"
+            type="file"
+            class="sr-only"
+          />
         </div>
       </div>
       <div class="flex flex-col">
@@ -166,7 +250,7 @@ async function submit() {
         <label for="genre" class="block text-sm/6 font-medium text-white"
           >Genre</label
         >
-        <div class="mt-2 mb-4">
+        <div class="mt-2">
           <input
             v-model="trackData.genre"
             type="text"

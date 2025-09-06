@@ -9,12 +9,42 @@ import NotFound from "./components/NotFound.vue";
 import UploadPage from "./pages/UploadPage.vue";
 import useUserStore from "./store/user";
 import GuestPage from "./pages/GuestPage.vue";
+import axiosClient from "./axios";
+import useUserProfileStore from "./store/userProfile";
+import useTrackStore from "./store/track";
 
 const routes = [
   {
     path: "/",
     component: DefaultLayout,
+
     children: [
+      {
+        path: "/:username",
+        name: "UserProfile",
+        component: ProfilePage,
+        meta: { requiresAuth: false },
+
+        beforeEnter: async (to: any, from: any, next: any) => {
+          try {
+            const userProfileStore = useUserProfileStore();
+            //const trackStore = useTrackStore();
+            // try fetching user by username
+            console.log("Username parameter:", to.params.username);
+            // get user profile data
+            const profileData = await userProfileStore.fetchProfile(
+              to.params.username
+            );
+            // get tracks from a user
+            //await trackStore.fetchTracks(profileData.id);
+            next(); // continue
+          } catch (e) {
+            console.error("Error fetching profile:", e);
+            return next({ name: "NotFound" });
+          }
+        },
+      },
+
       {
         path: "/",
         name: "Guest",
@@ -39,7 +69,7 @@ const routes = [
         component: TracksPage,
         meta: { requiresAuth: true },
       },
-      { path: "/profile", name: "Profile", component: ProfilePage },
+      // { path: "/profile", name: "Profile", component: ProfilePage },
     ],
     // beforeEnter: async (to: any, from: any, next: any) => {
     //   // Authentication check

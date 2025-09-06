@@ -14,15 +14,10 @@ import axiosClient from "../axios";
 import router from "../router";
 import useUserStore from "../store/user";
 import { computed } from "vue";
-import GuestPage from "../pages/GuestPage.vue";
+import type { User } from "../types/User";
 
+import Logo from "../assets/logo.png";
 const userStore = useUserStore();
-
-interface User {
-  name: string;
-  email: string;
-  imageUrl: string;
-}
 
 const user = computed<User | null>(() => userStore.user);
 
@@ -66,11 +61,7 @@ function logout() {
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center">
             <div class="shrink-0 flex items-center space-x-2">
-              <img
-                class="size-8"
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500"
-                alt="Your Company"
-              />
+              <img class="size-8" :src="Logo" alt="Your Company" />
               <p class="font-bold text-lg">Tracknest</p>
             </div>
             <div class="hidden md:block">
@@ -121,6 +112,19 @@ function logout() {
                   <MenuItems
                     class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-800 py-1 outline-1 -outline-offset-1 outline-white/10"
                   >
+                    <MenuItem>
+                      <button
+                        @click="
+                          router.push({
+                            name: 'UserProfile',
+                            params: { username: user?.username },
+                          })
+                        "
+                        :class="['block px-4 py-2 text-sm text-gray-300']"
+                      >
+                        My Profile
+                      </button>
+                    </MenuItem>
                     <MenuItem>
                       <button
                         @click="logout"

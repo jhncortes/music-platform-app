@@ -1,9 +1,24 @@
 Things to do:
+- Fix home page - show all users tracks - DONE
+- Edit profile feature (allow users to edit name, upload profile pic, bio etc)
+- Put in privileges/authorization (Can delete upload own tracks, edit their profile)
+- make settings page -> edit profile
 
-- Fix frontend upload feature ( make )
-- Fix backend upload ( make filetype dynamic )
+- change naming conventions from userId to user_id etc
+- 
+
+Create table called profile
+when creating an account, fill the profile table with default blank
+
+
 
 
 Later:
+- Filter option
+- Search feature
+- Timestamps on tracks
 
+
+Bugs:
 - Weird bug where user can access /home if backend api is down ( fix routing )
+- Profile doesnt switch immediately when i click on my profile when im in someone elses profile

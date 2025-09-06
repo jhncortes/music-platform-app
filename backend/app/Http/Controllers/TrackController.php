@@ -29,7 +29,8 @@ class TrackController extends Controller
         ->map(function ($track) {
             return [
                 'id' => $track->id,
-                'url' => $track->path,
+                'imageUrl' => $track->imageUrl,
+                'audioUrl' => $track->audioUrl,
                 'title' => $track->title,
                 'description' => $track->description,
                 'genre' => $track->genre,
@@ -53,26 +54,52 @@ class TrackController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'userId' => 'required|string|max:255',
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg'],
+            'audio' => ['required', 'mimes:mp3,wav'], // Only mimes for now
         ]);
 
-        $file = $request->file('image');
-        $presignedUrl = $this->s3Service->getPresignedUrl(env('AWS_BUCKET'), 'cover-photo/' . $file->getClientOriginalName(), 60, $file->getMimeType());
+        $imageFile = $request->file('image');
+        $audioFile = $request->file('audio');
+
+        $imagePresignedUrl = $this->s3Service->getPresignedUrl(
+            env('AWS_BUCKET'),
+            "images/track-photos/{$request->userId}/{$imageFile->getClientOriginalName()}",
+            60,
+            $imageFile->getMimeType()
+        );
+
+        $audioPresignedUrl = $this->s3Service->getPresignedUrl(
+            env('AWS_BUCKET'),
+            "audio/{$request->userId}/{$audioFile->getClientOriginalName()}",
+            60,
+            $audioFile->getMimeType()
+        );
+
          // Remove query parameters for storage path
-        $path = explode('?', $presignedUrl)[0];
+        $imageUrl = explode('?', $imagePresignedUrl)[0];
+        $audioUrl = explode('?', $audioPresignedUrl)[0];
+
 
         // Store to DB
         Track::create([
-            'path' => $path,
+            'userId' => $request->userId,
+            'imageUrl' => $imageUrl,
+            'audioUrl' => $audioUrl,
             'title' => $request->title,
             'description' => $request->description,
             'genre' => $request->genre,
         ]);
 
-        return response($presignedUrl, 201);
+        
+
+        return response()->json([
+            'imagePresignedUrl' => $imagePresignedUrl,
+            'audioPresignedUrl' => $audioPresignedUrl,
+        ], 201);
     }
 
     /**
@@ -81,7 +108,32 @@ class TrackController extends Controller
     public function show(Track $track)
     {
         //
+        return response()->json($track);
+        
     }
+
+    public function getByUserId($userId)
+    {
+        $tracks = Track::where('userId', $userId)
+            ->latest()
+            ->get()
+            ->map(function ($track) {
+                return [
+                    'id' => $track->id,
+                    'imageUrl' => $track->imageUrl,
+                    'audioUrl' => $track->audioUrl,
+                    'title' => $track->title,
+                    'description' => $track->description,
+                    'genre' => $track->genre,
+                    'created_at' => $track->created_at,
+                    'updated_at' => $track->updated_at,
+                ];
+            });
+
+        return response()->json($tracks);
+    }
+
+    
 
     // /**
     //  * Show the form for editing the specified resource.
