@@ -7,6 +7,7 @@ import router from "../router";
 import axios from "axios";
 import useUserStore from "../store/user";
 import type { User } from "../types/User";
+import { putToS3 } from "../services/s3";
 
 const userStore = useUserStore();
 const user = computed<User | null>(() => userStore.user);
@@ -53,20 +54,6 @@ const trackData = ref<TrackData>({
   description: "",
   genre: "",
 });
-
-async function putToS3(presignedUrl: string, file: File) {
-  try {
-    const s3Response = await axios.put(presignedUrl, file, {
-      headers: {
-        "Content-Type": file.type,
-      },
-      withCredentials: false,
-    });
-    console.log("File uploaded to S3 successfully", s3Response);
-  } catch (error) {
-    console.error("Error uploading file to S3:", error);
-  }
-}
 
 async function submit() {
   try {

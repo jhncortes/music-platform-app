@@ -32,7 +32,7 @@ onMounted(async () => {
 <template>
   <main>
     <header class="flex gap-6">
-      <img src="https://avatar.iran.liara.run/public" class="w-40 h-40" />
+      <img :src="userProfile?.imageUrl" class="w-40 h-40 rounded-full" />
       <div>
         <h1 class="text-4xl font-semibold mb-1">{{ userProfile?.username }}</h1>
         <h2 class="text-sm">{{ userProfile?.name }}</h2>

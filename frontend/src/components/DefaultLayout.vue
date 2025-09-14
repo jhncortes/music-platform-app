@@ -95,7 +95,7 @@ function logout() {
                   <span class="sr-only">Open user menu</span>
                   <img
                     class="size-8 rounded-full outline -outline-offset-1 outline-white/10"
-                    src="https://randomuser.me/api/portraits/women/15.jpg"
+                    :src="user?.avatar"
                     alt=""
                   />
                   <span class="ml-3">{{ user?.name }}</span>

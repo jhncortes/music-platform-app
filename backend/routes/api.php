@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TrackController;
+use App\Http\Controllers\UserController;
 use App\Models\Profile;
 use App\Models\User;
 
@@ -32,12 +34,7 @@ Route::get('/user/{userId}/tracks', [TrackController::class, 'getByUserId']);
 Route::apiResource('/tracks', TrackController::class)
     ->only(['index', 'store', 'show', 'destroy']);
 
-
-Route::middleware(['auth:sanctum'])
-    ->group(function () {
-        Route::get('/user', function (Request $request) {
-            return $request->user();
-        });
+Route::apiResource('/profile', ProfileController::class);
 
 
-});
+Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser']);

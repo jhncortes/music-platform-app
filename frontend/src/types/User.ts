@@ -13,3 +13,8 @@ export interface UserProfile {
   imageUrl: string;
   bio: string;
 }
+
+export interface UserProfileData {
+  bio: string;
+  imageFile: File | null;
+}

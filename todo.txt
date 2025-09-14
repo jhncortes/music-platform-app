@@ -1,11 +1,16 @@
 Things to do:
-- Fix home page - show all users tracks - DONE
-- Edit profile feature (allow users to edit name, upload profile pic, bio etc)
-- Put in privileges/authorization (Can delete upload own tracks, edit their profile)
-- make settings page -> edit profile
+
+- Edit profile feature - DONE
+- Music player feature
+- Comments feature
+- Follow feature
+
+
+
+
 
 - change naming conventions from userId to user_id etc
-- 
+- move everything from 
 
 Create table called profile
 when creating an account, fill the profile table with default blank
