@@ -17,6 +17,7 @@ import { computed } from "vue";
 import type { User } from "../types/User";
 
 import Logo from "../assets/logo.png";
+import AudioPlayer from "./AudioPlayer.vue";
 const userStore = useUserStore();
 
 const user = computed<User | null>(() => userStore.user);
@@ -95,7 +96,7 @@ function logout() {
                   <span class="sr-only">Open user menu</span>
                   <img
                     class="size-8 rounded-full outline -outline-offset-1 outline-white/10"
-                    :src="user?.avatar"
+                    :src="user?.imageUrl"
                     alt=""
                   />
                   <span class="ml-3">{{ user?.name }}</span>
@@ -209,8 +210,8 @@ function logout() {
       <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <!-- Your content -->
         <RouterView />
-        <!-- Shows guest page if not logged in and on home route -->
       </div>
+      <AudioPlayer />
     </main>
   </div>
 </template>

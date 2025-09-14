@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('tracks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('userId')->constrained('users')->onDelete('cascade');
-            $table->string('imageUrl', 2000);
-            $table->string('audioUrl', 2000);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('image_url', 2000);
+            $table->string('audio_url', 2000);
             $table->string('title');
             $table->string('description');
             $table->string('genre');

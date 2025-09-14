@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Track extends Model
 {
     protected $fillable = [
-        'userId',
-        'imageUrl',
-        'audioUrl',
+        'user_id',
+        'image_url',
+        'audio_url',
         'title',
         'description',
         'genre'

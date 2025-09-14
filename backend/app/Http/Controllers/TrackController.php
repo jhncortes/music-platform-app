@@ -21,24 +21,34 @@ class TrackController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        return Track::latest()
-        ->get()
-        ->map(function ($track) {
+        // Start query builder
+        $query = Track::query();
+
+        // Filter by userId if provided
+        if ($request->has('userId')) {
+            $query->where('user_id', $request->get('userId'));
+        }
+
+        // Apply ordering and execute the filtered query
+        $tracks = $query->latest()->get();
+
+        // Map to clean JSON
+        return $tracks->map(function ($track) {
             return [
                 'id' => $track->id,
-                'imageUrl' => $track->imageUrl,
-                'audioUrl' => $track->audioUrl,
+                'imageUrl' => $track->image_url,
+                'audioUrl' => $track->audio_url,
                 'title' => $track->title,
                 'description' => $track->description,
                 'genre' => $track->genre,
-                'created_at' => $track->created_at,
-                'updated_at' => $track->updated_at,
+                'createdAt' => $track->created_at,
+                'updatedAt' => $track->updated_at,
             ];
         });
     }
+
 
     // /**
     //  * Show the form for creating a new resource.
@@ -86,9 +96,9 @@ class TrackController extends Controller
 
         // Store to DB
         Track::create([
-            'userId' => $request->userId,
-            'imageUrl' => $imageUrl,
-            'audioUrl' => $audioUrl,
+            'user_id' => $request->userId,
+            'image_url' => $imageUrl,
+            'audio_url' => $audioUrl,
             'title' => $request->title,
             'description' => $request->description,
             'genre' => $request->genre,
@@ -114,19 +124,19 @@ class TrackController extends Controller
 
     public function getByUserId($userId)
     {
-        $tracks = Track::where('userId', $userId)
+        $tracks = Track::where('user_id', $userId)
             ->latest()
             ->get()
             ->map(function ($track) {
                 return [
                     'id' => $track->id,
-                    'imageUrl' => $track->imageUrl,
-                    'audioUrl' => $track->audioUrl,
+                    'imageUrl' => $track->image_url,
+                    'audioUrl' => $track->audio_url,
                     'title' => $track->title,
                     'description' => $track->description,
                     'genre' => $track->genre,
-                    'created_at' => $track->created_at,
-                    'updated_at' => $track->updated_at,
+                    'createdAt' => $track->created_at,
+                    'updatedAt' => $track->updated_at,
                 ];
             });
 

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import axiosClient from "../axios";
 import type { Track } from "../types/Track";
-import AudioPlayer from "../components/AudioPlayer.vue";
+import AudioPlayer from "../components/AudioCard.vue";
 import useUserStore from "../store/user";
 import type { User } from "../types/User";
 
@@ -29,7 +29,7 @@ function deleteTrack(trackId: number) {
 onMounted(async () => {
   try {
     const response = await axiosClient.get(
-      `/api/user/${user.value?.id}/tracks`
+      `/api/tracks?userId=${user.value?.id}`
     );
     tracks.value = response.data;
     console.log("Tracks fetched successfully:", response.data);

@@ -24,7 +24,7 @@ const userProfile = computed<UserProfile | null>(
 
 const profileData = ref<UserProfileData>({
   bio: "",
-  imageFile: null,
+  image: null,
 });
 
 async function submitChanges() {
@@ -35,8 +35,8 @@ async function submitChanges() {
       formData.append("bio", profileData.value.bio);
     }
     // Only append avatar if it exists
-    if (profileData.value.imageFile) {
-      formData.append("avatar", profileData.value.imageFile);
+    if (profileData.value.image) {
+      formData.append("image", profileData.value.image);
     }
     // Spoof PATCH method
     formData.append("_method", "PATCH");
@@ -49,12 +49,12 @@ async function submitChanges() {
       }
     );
 
-    if (profileData.value.imageFile) {
+    if (profileData.value.image) {
       try {
         console.log("Uploading image to S3...");
         const s3Response = await putToS3(
           response.data.presignedUrl,
-          profileData.value.imageFile
+          profileData.value.image
         );
         console.log("Image uploaded to S3:", s3Response);
       } catch (error) {
@@ -148,7 +148,7 @@ async function submitChanges() {
               accept="image/*"
               class="hidden"
               @change="
-                profileData.imageFile =
+                profileData.image =
                   ($event.target as HTMLInputElement).files?.[0] ?? null
               "
             />

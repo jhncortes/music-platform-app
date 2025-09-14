@@ -9,15 +9,15 @@ const useUserProfileStore = defineStore("userProfile", {
   actions: {
     async fetchProfile(username: string) {
       try {
-        const { data } = await axiosClient.get(`/api/user/${username}`);
+        const response = await axiosClient.get(`/api/user/${username}`);
 
         // Flatten the response
         this.userProfile = {
-          id: data.user.id,
-          username: data.user.username,
-          name: data.user.name,
-          imageUrl: data.profile.avatar || "",
-          bio: data.profile.bio,
+          id: response.data.id,
+          username: response.data.username,
+          name: response.data.name,
+          imageUrl: response.data.imageUrl || "",
+          bio: response.data.bio,
         };
 
         console.log("User profile data fetched:", this.userProfile);

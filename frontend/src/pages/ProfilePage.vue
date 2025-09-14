@@ -4,7 +4,7 @@ import type { UserProfile } from "../types/User";
 import useUserProfileStore from "../store/userProfile";
 import useTrackStore from "../store/track";
 import type { Track } from "../types/Track";
-import AudioPlayer from "../components/AudioPlayer.vue";
+import AudioPlayer from "../components/AudioCard.vue";
 import axiosClient from "../axios";
 
 const userProfileStore = useUserProfileStore();
@@ -19,7 +19,7 @@ const tracks = ref<Track[]>([]);
 onMounted(async () => {
   try {
     const response = await axiosClient.get(
-      `/api/user/${userProfile.value?.id}/tracks`
+      `/api/tracks?userId=${userProfile.value?.id}`
     );
     tracks.value = response.data;
     console.log("Tracks fetched successfully:", response.data);

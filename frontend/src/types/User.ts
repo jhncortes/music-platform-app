@@ -16,5 +16,5 @@ export interface UserProfile {
 
 export interface UserProfileData {
   bio: string;
-  imageFile: File | null;
+  image: File | null;
 }

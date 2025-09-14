@@ -37,8 +37,8 @@ class RegisteredUserController extends Controller
 
         // Create users profile with default fields
         Profile::create([
-            'userId' => $user->id,
-            'avatar' => '',
+            'user_id' => $user->id,
+            'image_url' => '',
             'bio' => '',
         ]);
 

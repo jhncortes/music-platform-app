@@ -71,14 +71,14 @@ public function update(Request $request, string $id)
     // Validate fields (optional)
     $validated = $request->validate([
         'bio' => 'nullable|string|max:255',
-        'avatar' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg',
+        'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg',
     ]);
 
     $imagePresignedUrl = null;
 
     // Handle avatar if uploaded
-    if ($request->hasFile('avatar')) {
-        $imageFile = $request->file('avatar');
+    if ($request->hasFile('image')) {
+        $imageFile = $request->file('image');
         $extension = $imageFile->extension();
 
         // Generate presigned URL for S3 upload
@@ -92,7 +92,7 @@ public function update(Request $request, string $id)
         // Get the appropriate URL without presigned parameters
         $imageUrl = explode('?', $imagePresignedUrl)[0];
         // Store the S3 key (or URL) in the validated array
-        $validated['avatar'] = $imageUrl; 
+        $validated['image_url'] = $imageUrl; 
     }
 
     // Update user profile with whatever fields are present
@@ -100,7 +100,6 @@ public function update(Request $request, string $id)
 
     return response()->json([
         'message' => 'User profile successfully updated',
-        'request_data' => $request->all(),
         'data' => $userProfile,
         'presignedUrl' => $imagePresignedUrl, // return presigned URL for client to upload
     ], 200);
