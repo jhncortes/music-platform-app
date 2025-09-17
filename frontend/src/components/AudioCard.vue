@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, defineProps, onMounted } from "vue";
 import { PlayCircleIcon, PauseCircleIcon } from "@heroicons/vue/24/solid";
+import { useTrackStore } from "../store/track";
 
 const props = defineProps<{
   creator: string | undefined;
@@ -8,6 +9,8 @@ const props = defineProps<{
   imageUrl: string;
   audioSource: string;
 }>();
+
+const trackStore = useTrackStore();
 
 const audio = ref<HTMLAudioElement | null>(null);
 const audioContext = new AudioContext();
@@ -39,6 +42,15 @@ function changeVolume(gainNode: GainNode) {
   }
 }
 async function togglePlay() {
+  console.log("Setting current track", props.title);
+  trackStore.setCurrentTrack({
+    id: 0,
+    title: props.title,
+    description: "",
+    genre: "",
+    imageUrl: props.imageUrl,
+    audioUrl: props.audioSource,
+  });
   if (audioContext.state === "suspended") {
     await audioContext.resume();
   }
@@ -210,10 +222,10 @@ onMounted(() => {
         <div class="inline-block gap-2 w-full mx-4">
           <div class="relative w-full h-26">
             <!-- Waveform Canvas -->
-            <canvas
+            <!-- <canvas
               ref="waveformCanvas"
               class="absolute top-0 left-0 w-full h-full"
-            ></canvas>
+            ></canvas> -->
 
             <!-- Hidden progress bar overlay -->
             <input

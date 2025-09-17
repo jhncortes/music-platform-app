@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import type { UserProfile } from "../types/User";
 import useUserProfileStore from "../store/userProfile";
-import useTrackStore from "../store/track";
+import { useTrackStore } from "../store/track";
 import type { Track } from "../types/Track";
 import AudioPlayer from "../components/AudioCard.vue";
 import axiosClient from "../axios";

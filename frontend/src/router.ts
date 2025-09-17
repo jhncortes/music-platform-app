@@ -11,7 +11,7 @@ import useUserStore from "./store/user";
 import GuestPage from "./pages/GuestPage.vue";
 import axiosClient from "./axios";
 import useUserProfileStore from "./store/userProfile";
-import useTrackStore from "./store/track";
+import { useTrackStore } from "./store/track";
 import SettingsPage from "./pages/SettingsPage.vue";
 
 const routes = [

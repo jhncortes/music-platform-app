@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Track;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; 
 use App\Services\S3Service; // Import the S3Service
@@ -23,21 +24,23 @@ class TrackController extends Controller
      */
     public function index(Request $request)
     {
-        // Start query builder
-        $query = Track::query();
+        // Start query builder and eager load users
+        $query = Track::with('user:id,name,username');
 
         // Filter by userId if provided
         if ($request->has('userId')) {
             $query->where('user_id', $request->get('userId'));
         }
 
-        // Apply ordering and execute the filtered query
+        // Apply ordering and execute
         $tracks = $query->latest()->get();
 
         // Map to clean JSON
         return $tracks->map(function ($track) {
             return [
                 'id' => $track->id,
+                'creatorId' => $track->user_id,
+                'creator' => $track->user ? $track->user->username : null,
                 'imageUrl' => $track->image_url,
                 'audioUrl' => $track->audio_url,
                 'title' => $track->title,
@@ -48,6 +51,8 @@ class TrackController extends Controller
             ];
         });
     }
+
+
 
 
     // /**
@@ -121,28 +126,6 @@ class TrackController extends Controller
         return response()->json($track);
         
     }
-
-    public function getByUserId($userId)
-    {
-        $tracks = Track::where('user_id', $userId)
-            ->latest()
-            ->get()
-            ->map(function ($track) {
-                return [
-                    'id' => $track->id,
-                    'imageUrl' => $track->image_url,
-                    'audioUrl' => $track->audio_url,
-                    'title' => $track->title,
-                    'description' => $track->description,
-                    'genre' => $track->genre,
-                    'createdAt' => $track->created_at,
-                    'updatedAt' => $track->updated_at,
-                ];
-            });
-
-        return response()->json($tracks);
-    }
-
     
 
     // /**

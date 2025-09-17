@@ -1,5 +1,7 @@
 export interface Track {
   id: number;
+  creatorId: number;
+  creator: string | null;
   title: string;
   description: string;
   genre: string;
