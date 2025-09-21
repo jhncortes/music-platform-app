@@ -6,7 +6,7 @@ import AudioPlayer from "../components/AudioCard.vue";
 import useUserStore from "../store/user";
 import type { User } from "../types/User";
 import { useTrackStore } from "../store/track";
-import AudioCardNew from "../components/AudioCardNew.vue";
+import AudioCardNew from "../components/AudioCard.vue";
 
 //const tracks = ref<Track[]>([]);
 const userStore = useUserStore();
@@ -92,6 +92,8 @@ onMounted(async () => {
             :id="track.id"
             :genre="track.genre"
             :description="track.description"
+            :createdAt="track.createdAt"
+            :updatedAt="track.updatedAt"
           />
         </div>
       </div>

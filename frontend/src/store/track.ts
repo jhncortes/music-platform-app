@@ -2,11 +2,13 @@ import { defineStore } from "pinia";
 import axiosClient from "../axios";
 import { ref, computed } from "vue";
 import type { Track } from "../types/Track";
+import { useCommentStore } from "./comment";
 
 export const useTrackStore = defineStore("track", () => {
   // Fetched tracks
   const tracks = ref<Track[]>([]);
   const currentTrack = ref<Track | null>(null);
+  const viewedTrack = ref<Track | null>(null);
 
   // Player state
   //const currentIndex = ref<number>(0);
@@ -71,7 +73,7 @@ export const useTrackStore = defineStore("track", () => {
   }
 
   // Fetch tracks for a user
-  async function fetchTracks(userId: string | null) {
+  async function fetchTracks(userId: number | null) {
     try {
       const { data } = await axiosClient.get(`/api/tracks?userId=${userId}`);
       tracks.value = data;
@@ -79,6 +81,20 @@ export const useTrackStore = defineStore("track", () => {
       return data;
     } catch (error) {
       console.error("Error fetching tracks:", error);
+      throw error;
+    }
+  }
+
+  async function fetchTrackbyId(trackId: string | null) {
+    try {
+      const { data } = await axiosClient.get(`/api/tracks/${trackId}`);
+      const commentStore = useCommentStore();
+      viewedTrack.value = data;
+      commentStore.comments = data.comments;
+      console.log("Viewed track fetched:", data);
+      return data;
+    } catch (error) {
+      console.error("Error fetching Viewed track:", error);
       throw error;
     }
   }
@@ -137,6 +153,7 @@ export const useTrackStore = defineStore("track", () => {
   return {
     tracks,
     currentTrack,
+    viewedTrack,
     currentTime,
     duration,
     audio,
@@ -144,6 +161,7 @@ export const useTrackStore = defineStore("track", () => {
     //currentIndex,
     isPlaying,
     fetchTracks,
+    fetchTrackbyId,
     togglePlay,
     setCurrentTrack,
     volume,

@@ -68,7 +68,7 @@ async function submit() {
     }
 
     const formData = new FormData();
-    formData.append("userId", user.value.id);
+    formData.append("userId", String(user.value.id));
     formData.append("image", trackData.value.image);
     formData.append("audio", trackData.value.audio);
     formData.append("title", trackData.value.title);

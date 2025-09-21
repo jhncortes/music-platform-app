@@ -13,6 +13,7 @@ import axiosClient from "./axios";
 import useUserProfileStore from "./store/userProfile";
 import { useTrackStore } from "./store/track";
 import SettingsPage from "./pages/SettingsPage.vue";
+import TrackInfoPage from "./pages/TrackInfoPage.vue";
 
 const routes = [
   {
@@ -45,6 +46,26 @@ const routes = [
           }
         },
       },
+      {
+        path: "/track/:trackId",
+        name: "TrackInfo",
+        component: TrackInfoPage,
+        meta: { requiresAuth: false },
+
+        beforeEnter: async (to: any, from: any, next: any) => {
+          try {
+            const trackStore = useTrackStore();
+            const viewedTrack = await trackStore.fetchTrackbyId(
+              to.params.trackId
+            );
+
+            next(); // continue
+          } catch (e) {
+            console.error("Error fetching profile:", e);
+            return next({ name: "NotFound" });
+          }
+        },
+      },
 
       {
         path: "/",
@@ -52,6 +73,7 @@ const routes = [
         component: GuestPage,
         meta: { requiresAuth: false },
       },
+
       {
         path: "/home",
         name: "Home",
@@ -70,6 +92,7 @@ const routes = [
         component: TracksPage,
         meta: { requiresAuth: true },
       },
+
       {
         path: "/settings",
         name: "Settings",

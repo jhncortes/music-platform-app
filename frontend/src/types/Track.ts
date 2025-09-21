@@ -1,12 +1,15 @@
 export interface Track {
-  id: number;
-  creatorId: number;
-  creator: string | null;
-  title: string;
-  description: string;
-  genre: string;
-  imageUrl: string;
-  audioUrl: string;
+  id?: number;
+  creatorId?: number;
+  creator?: string;
+  creatorImageUrl?: string;
+  title?: string;
+  description?: string;
+  genre?: string;
+  imageUrl?: string;
+  audioUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TrackData {

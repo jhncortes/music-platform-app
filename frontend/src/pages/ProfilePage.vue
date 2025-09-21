@@ -39,19 +39,12 @@ onMounted(async () => {
         <h2 class="text-sm">{{ userProfile?.bio }}</h2>
       </div>
     </header>
-    <div
+    <!-- <div
       v-if="tracks && userProfile"
       v-for="track in tracks"
       :key="track.id"
       class="grid grid-cols-1 my-12"
-    >
-      <AudioPlayer
-        :audioSource="track.audioUrl"
-        :creator="userProfile.name"
-        :title="track.title"
-        :imageUrl="track.imageUrl"
-      />
-    </div>
+    ></div> -->
   </main>
 </template>
 

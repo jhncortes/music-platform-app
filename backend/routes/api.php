@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,3 +21,6 @@ Route::apiResource('/profile', ProfileController::class);
 
 Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser']);
 Route::get('/user/{username}', [UserController::class, 'getUserByUsername']);
+
+Route::post('/comment', [CommentController::class, 'storeComment']);
+

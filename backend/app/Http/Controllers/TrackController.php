@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Track;
 use App\Http\Controllers\Controller;
+use App\Models\Profile;
 use App\Models\User;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage; 
 use App\Services\S3Service; // Import the S3Service
@@ -25,11 +27,12 @@ class TrackController extends Controller
     public function index(Request $request)
     {
         // Start query builder and eager load users
-        $query = Track::with('user:id,name,username');
+        $query = Track::with(['user:id,username', 'user.profile:id,user_id,image_url']);
 
         // Filter by userId if provided
         if ($request->has('userId')) {
             $query->where('user_id', $request->get('userId'));
+            //$profileQuery->where('user_id', $request->get('userId'));
         }
 
         // Apply ordering and execute
@@ -41,6 +44,9 @@ class TrackController extends Controller
                 'id' => $track->id,
                 'creatorId' => $track->user_id,
                 'creator' => $track->user ? $track->user->username : null,
+                'creatorImageUrl' => $track->user && $track->user->profile 
+                    ? $track->user->profile->image_url 
+                    : null,
                 'imageUrl' => $track->image_url,
                 'audioUrl' => $track->audio_url,
                 'title' => $track->title,
@@ -122,9 +128,48 @@ class TrackController extends Controller
      */
     public function show(Track $track)
     {
-        //
-        return response()->json($track);
-        
+        // Get user info
+        $user = $track->user;
+        $userProfile = Profile::where('user_id', $track->user_id)->first();
+
+        // Gets comments with the users details and info
+        $comments = Comment::with(['user' => function ($query) {
+                $query->select('id', 'username'); // only fetch these columns
+            }, 'user.profile' => function ($query) {
+                $query->select('id', 'user_id', 'image_url'); // include user_id for relation
+            }])
+            ->where('track_id', $track->id)
+            ->latest()
+            ->get()
+            ->map(function ($comment) {
+                return [
+                    'id' => $comment->id,
+                    'comment' => $comment->comment,
+                    'createdAt' => $comment->created_at,
+                    'user' => [
+                        'id' => $comment->user->id,
+                        'username' => $comment->user->username,
+                        'profile' => [
+                            'imageUrl' => $comment->user->profile->image_url ?? null,
+                        ],
+                    ],
+                ];
+            });
+
+        return response()->json([
+            'id' => $track->id,
+            'creatorId' => $track->user_id,
+            'creator' => $user ? $user->username : null,
+            'creatorImageUrl' => $userProfile->image_url,
+            'imageUrl' => $track->image_url,
+            'audioUrl' => $track->audio_url,
+            'title' => $track->title,
+            'description' => $track->description,
+            'genre' => $track->genre,
+            'createdAt' => $track->created_at,
+            'updatedAt' => $track->updated_at,
+            'comments' => $comments,
+        ]);
     }
     
 

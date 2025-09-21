@@ -1,17 +1,18 @@
 export interface User {
-  id: string;
+  id: number;
   username: string;
   name: string;
   email: string;
   imageUrl: string;
+  profile: UserProfile;
 }
 
 export interface UserProfile {
-  id: string;
+  id: number;
   username: string;
   name: string;
-  imageUrl: string;
-  bio: string;
+  imageUrl?: string;
+  bio?: string;
 }
 
 export interface UserProfileData {
