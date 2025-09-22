@@ -1,8 +1,10 @@
+import type { UserProfile } from "./User";
+
 export interface Track {
   id?: number;
-  creatorId?: number;
-  creator?: string;
-  creatorImageUrl?: string;
+  // creatorId?: number;
+  // creator?: string;
+  // creatorImageUrl?: string;
   title?: string;
   description?: string;
   genre?: string;
@@ -10,6 +12,9 @@ export interface Track {
   audioUrl?: string;
   createdAt?: string;
   updatedAt?: string;
+  likes?: number;
+  isLiked?: boolean;
+  creatorProfile?: UserProfile;
 }
 
 export interface TrackData {

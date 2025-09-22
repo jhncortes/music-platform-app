@@ -13,6 +13,7 @@ export interface UserProfile {
   name: string;
   imageUrl?: string;
   bio?: string;
+  isFollowing?: boolean;
 }
 
 export interface UserProfileData {

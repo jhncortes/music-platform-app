@@ -10,6 +10,8 @@ export const useTrackStore = defineStore("track", () => {
   const currentTrack = ref<Track | null>(null);
   const viewedTrack = ref<Track | null>(null);
 
+  const isLiked = ref(false);
+
   // Player state
   //const currentIndex = ref<number>(0);
   const isPlaying = ref(false);
@@ -69,13 +71,23 @@ export const useTrackStore = defineStore("track", () => {
 
     // Force play the new track
     console.log("Playing new track:", track.title);
+    console.log(
+      "Playing new creator username:",
+      track.creatorProfile?.username
+    );
+
     playAudio();
   }
 
-  // Fetch tracks for a user
-  async function fetchTracks(userId: number | null) {
+  //Fetch tracks for a user
+  async function fetchTracks(query?: string) {
     try {
-      const { data } = await axiosClient.get(`/api/tracks?userId=${userId}`);
+      let url = "/api/tracks";
+      if (query) {
+        url += query;
+      }
+      tracks.value = [];
+      const { data } = await axiosClient.get(url);
       tracks.value = data;
       console.log("Tracks fetched:", data);
       return data;

@@ -6,32 +6,17 @@ import AudioPlayer from "../components/AudioCard.vue";
 import useUserStore from "../store/user";
 import type { User } from "../types/User";
 import AudioCard from "../components/AudioCard.vue";
+import { useTrackStore } from "../store/track";
 
-const tracks = ref<Track[]>([]);
+//const tracks = ref<Track[]>([]);
+const trackStore = useTrackStore();
 const userStore = useUserStore();
 const user = computed<User | null>(() => userStore.user);
-
-function deleteTrack(trackId: number) {
-  if (!confirm("Are you sure you want to delete this track?")) {
-    return;
-  }
-  axiosClient
-    .delete(`/api/tracks/${trackId}`)
-    .then((response) => {
-      console.log("Track deleted successfully:", response.data);
-      // Optionally, remove the track from the local state
-      tracks.value = tracks.value.filter((track) => track.id !== trackId);
-    })
-    .catch((error) => {
-      console.error("Error deleting track:", error);
-    });
-}
+const tracks = computed<Track[] | null>(() => trackStore.tracks);
 
 onMounted(async () => {
   try {
-    const response = await axiosClient.get("/api/tracks");
-    tracks.value = response.data;
-    console.log("Tracks fetched successfully:", response.data);
+    await trackStore.fetchTracks();
   } catch (error) {
     console.error("Error fetching tracks:", error);
   }
@@ -59,39 +44,18 @@ onMounted(async () => {
           :key="track.id"
           class="overflow-hidden rounded-lg flex flex-col"
         >
-          <!-- <img :src="track.imageUrl" alt="Image" class="h-48" />
-          <div class="px-4 py-4">
-            <h3 class="text-lg font-semibold text-gray-900">
-              {{ track.title }}
-            </h3>
-            <p class="text-sm text-gray-500 mb-4">{{ track.description }}</p>
-            <p class="text-sm text-gray-500 mb-4">{{ track.genre }}</p>
-          </div> -->
-          <!-- <button
-            @click="deleteTrack(track.id)"
-            type="submit"
-            class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-          >
-            Delete Track
-          </button> -->
-
-          <!-- <AudioPlayer
-            :audioSource="track.audioUrl"
-            :creator="user?.name"
-            :title="track.title"
-            :imageUrl="track.imageUrl"
-          /> -->
           <AudioCard
-            :audioSource="track.audioUrl"
-            :creatorId="track.creatorId"
-            :creator="track.creator"
             :title="track.title"
             :imageUrl="track.imageUrl"
+            :audioUrl="track.audioUrl"
             :id="track.id"
             :genre="track.genre"
             :description="track.description"
             :createdAt="track.createdAt"
             :updatedAt="track.updatedAt"
+            :likes="track.likes"
+            :isLiked="track.isLiked"
+            :creatorProfile="track.creatorProfile"
           />
         </div>
       </div>

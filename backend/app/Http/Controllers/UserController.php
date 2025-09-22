@@ -20,15 +20,19 @@ class UserController extends Controller
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
-            'username' => $user->username,
             'email' => $user->email,
-            'imageUrl' => $user->profile?->image_url, 
-            'bio' => $user->profile?->bio,
+            'profile' => [
+                'username' => $user->username,
+                'imageUrl' => $user->profile?->image_url, 
+                'bio' => $user->profile?->bio,
+                'followers' => $user->followers->count(),
+                'following' => $user->following->count()
+            ],
         ]);
     }
 
     // Returns user and profile information based on username
-    public function getUserByUsername($username)
+    public function getUserByUsername(Request $request, $username)
     {
         $user = User::select('id', 'name', 'username')
             ->where('username', $username)
@@ -38,8 +42,15 @@ class UserController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$user) {
+        if (!$user || !$profile) {
             return response()->json(null, 404);
+        }
+
+        $authUser = $request->user();
+        $isFollowing = false;
+
+        if ($authUser) {
+            $isFollowing = $user->followers()->where('follower_id', $authUser->id)->exists();
         }
 
         return response()->json([
@@ -48,6 +59,10 @@ class UserController extends Controller
             'username' => $user->username,
             'imageUrl' => $profile ? $profile->image_url : null,
             'bio' => $profile ? $profile->bio : null,
+            'followers' => $user->followers->count(),
+            'following' => $user->following->count(),
+            'isFollowing' => $isFollowing
+
         ]);
     }
 }

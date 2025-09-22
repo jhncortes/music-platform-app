@@ -10,6 +10,7 @@ import {
 import { useTrackStore } from "../store/track";
 import { computed, onMounted, ref, watch } from "vue";
 import { formatTime } from "../utils/time";
+import router from "../router";
 
 const trackStore = useTrackStore();
 const currentTrack = computed(() => trackStore.currentTrack);
@@ -17,6 +18,10 @@ const currentTrack = computed(() => trackStore.currentTrack);
 const isPlaying = computed(
   () => trackStore.isPlaying && !!trackStore.currentTrack
 );
+
+onMounted(() => {
+  console.log(currentTrack.value?.creatorProfile);
+});
 </script>
 
 <template>
@@ -26,8 +31,30 @@ const isPlaying = computed(
     <div class="flex items-center gap-4 text-white">
       <img :src="currentTrack?.imageUrl" class="h-12 w-12 rounded-md" />
       <div class="inline-block">
-        <p class="font-bold">{{ currentTrack?.title }}</p>
-        <p class="text-sm text-neutral-400">{{ currentTrack?.creator }}</p>
+        <p
+          class="font-bold hover:cursor-pointer hover:text-neutral-400 transition-all"
+          @click="
+            currentTrack &&
+              router.push({
+                name: 'TrackInfo',
+                params: { trackId: currentTrack?.id },
+              })
+          "
+        >
+          {{ currentTrack?.title }}
+        </p>
+        <p
+          class="text-sm text-neutral-400 hover:cursor-pointer hover:text-neutral-300 transition-all"
+          @click="
+            currentTrack &&
+              router.push({
+                name: 'UserProfile',
+                params: { username: currentTrack?.creatorProfile?.username },
+              })
+          "
+        >
+          {{ currentTrack?.creatorProfile?.username }}
+        </p>
       </div>
     </div>
     <div class="flex justify-center items-center gap-4">

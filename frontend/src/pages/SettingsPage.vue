@@ -128,7 +128,10 @@ async function submitChanges() {
             class="p-5 my-1.5 flex rounded-2xl outline-1 outline-white/10 bg-white/5 items-center justify-between"
           >
             <div class="flex items-center">
-              <img :src="DefaultAvatar" class="h-20" />
+              <img
+                :src="user ? user?.imageUrl : DefaultAvatar"
+                class="h-20 rounded-full"
+              />
               <div class="ml-4">
                 <p class="text-xl font-bold">{{ user?.username }}</p>
                 <p>{{ user?.name }}</p>

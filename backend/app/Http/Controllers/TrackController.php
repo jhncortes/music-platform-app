@@ -26,27 +26,27 @@ class TrackController extends Controller
      */
     public function index(Request $request)
     {
-        // Start query builder and eager load users
-        $query = Track::with(['user:id,username', 'user.profile:id,user_id,image_url']);
+        $query = Track::withCount('likes')
+            ->with(['user:id,username', 'user.profile:id,user_id,image_url,bio']);
 
-        // Filter by userId if provided
         if ($request->has('userId')) {
             $query->where('user_id', $request->get('userId'));
-            //$profileQuery->where('user_id', $request->get('userId'));
         }
 
-        // Apply ordering and execute
         $tracks = $query->latest()->get();
+        $authUser = $request->user();
 
-        // Map to clean JSON
-        return $tracks->map(function ($track) {
+        return $tracks->map(function ($track) use ($authUser) {
+            // Check if the authenticated user follows this track's creator
+            $isFollowing = false;
+            if ($authUser && $track->user) {
+                $isFollowing = $track->user->followers()
+                    ->where('follower_id', $authUser->id)
+                    ->exists();
+            }
+
             return [
                 'id' => $track->id,
-                'creatorId' => $track->user_id,
-                'creator' => $track->user ? $track->user->username : null,
-                'creatorImageUrl' => $track->user && $track->user->profile 
-                    ? $track->user->profile->image_url 
-                    : null,
                 'imageUrl' => $track->image_url,
                 'audioUrl' => $track->audio_url,
                 'title' => $track->title,
@@ -54,9 +54,22 @@ class TrackController extends Controller
                 'genre' => $track->genre,
                 'createdAt' => $track->created_at,
                 'updatedAt' => $track->updated_at,
+                'likes' => $track->likes_count,
+                'isLiked' => $authUser ? $track->likes->contains($authUser->id) : false,
+                'creatorProfile' => [
+                    'id' => $track->user?->id,
+                    'username' => $track->user?->username ?? null,
+                    'imageUrl' => $track->user?->profile?->image_url ?? null,
+                    'bio' => $track->user?->profile?->bio ?? null,
+                    'followers' => $track->user?->followers->count() ?? null,
+                    'isFollowing' => $isFollowing
+                    
+                ]
+
             ];
         });
     }
+
 
 
 
@@ -126,12 +139,20 @@ class TrackController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Track $track)
+    public function show(Request $request, Track $track)
     {
         // Get user info
         $user = $track->user;
-        $userProfile = Profile::where('user_id', $track->user_id)->first();
+        $authUser = $request->user();
+        // $userProfile = Profile::where('user_id', $track->user_id)->first();
+        $isFollowing = false;
 
+        if ($authUser) {
+            // Check if the authenticated user's ID is in the followers of $user
+            $isFollowing = $user->followers()->where('follower_id', $authUser->id)->exists();
+            $isLiked = $track->likes()->where('user_id', $authUser->id)->exists();
+        }
+        $track->loadCount('likes');
         // Gets comments with the users details and info
         $comments = Comment::with(['user' => function ($query) {
                 $query->select('id', 'username'); // only fetch these columns
@@ -158,9 +179,6 @@ class TrackController extends Controller
 
         return response()->json([
             'id' => $track->id,
-            'creatorId' => $track->user_id,
-            'creator' => $user ? $user->username : null,
-            'creatorImageUrl' => $userProfile->image_url,
             'imageUrl' => $track->image_url,
             'audioUrl' => $track->audio_url,
             'title' => $track->title,
@@ -168,7 +186,17 @@ class TrackController extends Controller
             'genre' => $track->genre,
             'createdAt' => $track->created_at,
             'updatedAt' => $track->updated_at,
+            'likes' => $track->likes_count,
+            'isLiked' => $isLiked,
             'comments' => $comments,
+            'creatorProfile' => [
+                'id' => $track->user?->id,
+                'username' => $track->user?->username ?? null,
+                'imageUrl' => $track->user?->profile?->image_url ?? null,
+                'bio' => $track->user?->profile?->bio ?? null,
+                'followers' => $track->user?->followers->count() ?? null,
+                'isFollowing' => $isFollowing
+            ]
         ]);
     }
     

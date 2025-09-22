@@ -28,4 +28,13 @@ class CommentController extends Controller
         // Return created comment as JSON with 201 status
         return response()->json($comment, 201);
     }
+
+    public function deleteComment($commentId)
+    {
+        //
+        $comment = Comment::where('id', $commentId);
+        $comment->delete();
+
+        return response(null, 204);
+    }
 }
