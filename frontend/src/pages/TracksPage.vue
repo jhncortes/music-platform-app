@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from "vue";
 import axiosClient from "../axios";
 import type { Track } from "../types/Track";
+
 import useUserStore from "../store/user";
 import type { User } from "../types/User";
 import { useTrackStore } from "../store/track";
@@ -13,7 +14,7 @@ const user = computed<User | null>(() => userStore.user);
 const tracks = computed<Track[]>(() => trackStore.tracks);
 
 onMounted(async () => {
-  await trackStore.fetchTracks(`?userId=${user.value?.id}`);
+  await trackStore.fetchTracks(`?userId=${user?.value?.id}`);
 });
 </script>
 

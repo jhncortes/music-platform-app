@@ -184,6 +184,7 @@ import useUserProfileStore from "./store/userProfile";
 import { useTrackStore } from "./store/track";
 import SettingsPage from "./pages/SettingsPage.vue";
 import TrackInfoPage from "./pages/TrackInfoPage.vue";
+import SearchPage from "./pages/SearchPage.vue";
 
 const routes = [
   {
@@ -244,6 +245,13 @@ const routes = [
         component: HomePage,
         meta: { requiresAuth: true },
       },
+      {
+        path: "search",
+        name: "Search",
+        component: SearchPage,
+        meta: { requiresAuth: true },
+      },
+
       {
         path: "upload",
         name: "Upload",

@@ -29,11 +29,23 @@ class TrackController extends Controller
         $query = Track::withCount('likes')
             ->with(['user:id,username', 'user.profile:id,user_id,image_url,bio']);
 
-        if ($request->has('userId')) {
-            $query->where('user_id', $request->get('userId'));
+        // Check if 'search' is in params
+        if ($request->has('search')) {
+            $searchResult = $request->get('search');
+            // Return if search query is empty
+            if (empty($searchResult)) {
+                return response()->json([]);
+            }
+            $query->where('title', 'like', '%' . $searchResult . '%')
+                ->orWhere('genre', 'like', '%' .  $searchResult . '%');
         }
 
         $tracks = $query->latest()->get();
+        // Return if the tracks do not exist
+        if ($tracks->isEmpty()) {
+            return response()->json([]);
+        }
+
         $authUser = $request->user();
 
         return $tracks->map(function ($track) use ($authUser) {
@@ -65,7 +77,6 @@ class TrackController extends Controller
                     'isFollowing' => $isFollowing
                     
                 ]
-
             ];
         });
     }

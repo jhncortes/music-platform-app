@@ -65,7 +65,7 @@ async function postComment() {
 
     // Append locally
     const newComment: Comment = {
-      id: Date.now(), // temporary ID
+      id: response.data.id,
       userId: user.value.id,
       trackId: viewedTrack.value.id,
       comment: commentInputData.value.comment,
@@ -73,10 +73,10 @@ async function postComment() {
       user: {
         ...user.value,
         profile: {
-          id: user.value.id,
-          username: user.value.username,
-          name: user.value.name,
-          imageUrl: user.value.imageUrl,
+          id: user.value.profile.id,
+          username: user.value.profile.username,
+          name: user.value.profile.name,
+          imageUrl: user.value.profile.imageUrl,
         },
       },
     };
@@ -95,7 +95,7 @@ const commentInputData = ref({
   comment: "",
 });
 
-function deleteComment(commentId: number) {
+async function deleteComment(commentId: number) {
   if (!confirm("Are you sure you want to delete this comment?")) {
     return;
   }
@@ -320,7 +320,7 @@ async function toggleFollowButton(userId?: number) {
             />
             <div class="space-y-1">
               <p class="font-bold">
-                {{ comment.user.username
+                {{ comment.user.username || comment.user.profile.username
                 }}<span class="text-neutral-400 text-sm ml-2 font-normal">
                   {{ timeAgoIntl(comment?.createdAt) }}</span
                 >

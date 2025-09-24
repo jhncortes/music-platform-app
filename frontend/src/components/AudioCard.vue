@@ -86,12 +86,16 @@ async function toggleLikeButton(trackId?: number) {
 
 <template>
   <div
-    class="flex justify-between rounded-lg transition-colors p-4 hover:bg-neutral-800"
+    class="flex rounded-lg transition-colors p-4 hover:bg-neutral-800 w-full"
   >
-    <div class="flex gap-6 items-center">
-      <img :src="props.imageUrl" alt="Image" class="rounded-lg h-32 w-32" />
-      <div class="flex">
-        <div>
+    <div class="flex gap-6 flex-col sm:flex-row w-full">
+      <img
+        :src="props.imageUrl"
+        alt="Image"
+        class="rounded-lg w-full h-auto sm:h-32 sm:w-32"
+      />
+      <div class="flex justify-between w-full">
+        <div class="flex flex-col">
           <div class="flex gap-2">
             <a
               class="text-lg font-bold cursor-pointer"
@@ -167,12 +171,12 @@ async function toggleLikeButton(trackId?: number) {
             </button>
           </div>
         </div>
+        <!-- <div
+          class="text-sm text-neutral-100 bg-neutral-700 p-2 rounded-xl h-fit font-semibold"
+        >
+          # {{ props.genre }}
+        </div> -->
       </div>
-    </div>
-    <div
-      class="text-sm text-neutral-100 bg-neutral-700 p-2 rounded-xl h-fit font-semibold"
-    >
-      # {{ props.genre }}
     </div>
   </div>
 </template>
